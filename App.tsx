@@ -1,86 +1,76 @@
-﻿import React from "react";
-import { StatusBar } from "expo-status-bar";
-import { NavigationContainer } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Ionicons } from "@expo/vector-icons";
-import { I18nManager } from "react-native";
-import { useFonts, Vazirmatn_400Regular, Vazirmatn_500Medium, Vazirmatn_600SemiBold, Vazirmatn_700Bold } from "@expo-google-fonts/vazirmatn";
-import * as SplashScreen from "expo-splash-screen";
-import { AuthProvider, useAuth } from "./src/context/AuthContext";
-import BiometricLockScreen from "./src/screens/BiometricLockScreen";
-import HomeScreen from "./src/screens/HomeScreen";
-import RecipeDetailScreen from "./src/screens/RecipeDetailScreen";
-import ProvinceScreen from "./src/screens/ProvinceScreen";
-import ProvinceListScreen from "./src/screens/ProvinceListScreen";
-import SearchScreen from "./src/screens/SearchScreen";
-import ProfileScreen from "./src/screens/ProfileScreen";
-import SubmitRecipeScreen from "./src/screens/SubmitRecipeScreen";
-import SavedRecipesScreen from "./src/screens/SavedRecipesScreen";
-import LoginScreen from "./src/screens/LoginScreen";
-import RegisterScreen from "./src/screens/RegisterScreen";
-import { colors } from "./src/theme/colors";
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
-SplashScreen.preventAutoHideAsync();
+import React from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Image, StyleSheet, FlatList, StatusBar } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 
-export type RootStackParamList = {
-  MainTabs: undefined; RecipeDetail: { recipeId: string }; Province: { provinceId: string; provinceName: string };
-  SubmitRecipe: undefined; Login: undefined; Register: undefined;
-};
-export type MainTabParamList = { Home: undefined; Provinces: undefined; Search: undefined; Saved: undefined; Profile: undefined; };
-
-const Stack = createNativeStackNavigator<RootStackParamList>();
-const Tab = createBottomTabNavigator<MainTabParamList>();
-
-function MainTabs() {
-  return (
-    <Tab.Navigator screenOptions={({ route }) => ({
-      headerShown: false, tabBarActiveTintColor: colors.primary, tabBarInactiveTintColor: colors.textSecondary,
-      tabBarStyle: { height: 60, paddingBottom: 8, paddingTop: 6, backgroundColor: colors.surface, borderTopColor: colors.border },
-      tabBarLabelStyle: { fontFamily: "Vazirmatn_500Medium", fontSize: 11 },
-      tabBarIcon: ({ color, size, focused }) => {
-        let iconName: keyof typeof Ionicons.glyphMap = "home";
-        switch (route.name) {
-          case "Home": iconName = focused ? "home" : "home-outline"; break;
-          case "Provinces": iconName = focused ? "map" : "map-outline"; break;
-          case "Search": iconName = focused ? "search" : "search-outline"; break;
-          case "Saved": iconName = focused ? "bookmark" : "bookmark-outline"; break;
-          case "Profile": iconName = focused ? "person" : "person-outline"; break;
-        }
-        return <Ionicons name={iconName} size={size} color={color} />;
-      },
-    })}>
-      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: "خانه" }} />
-      <Tab.Screen name="Provinces" component={ProvinceListScreen} options={{ tabBarLabel: "استان‌ها" }} />
-      <Tab.Screen name="Search" component={SearchScreen} options={{ tabBarLabel: "جستجو" }} />
-      <Tab.Screen name="Saved" component={SavedRecipesScreen} options={{ tabBarLabel: "ذخیره‌شده‌ها" }} />
-      <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: "پروفایل" }} />
-    </Tab.Navigator>
-  );
-}
-
-function RootNavigator() {
-  const { isLocked } = useAuth();
-  if (isLocked) return <BiometricLockScreen />;
-  return (
-    <NavigationContainer>
-      <StatusBar style="dark" />
-      <Stack.Navigator screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="MainTabs" component={MainTabs} />
-        <Stack.Screen name="RecipeDetail" component={RecipeDetailScreen} options={{ headerShown: true, headerTitle: "", headerTransparent: true, headerBackTitleVisible: false }} />
-        <Stack.Screen name="Province" component={ProvinceScreen} options={({ route }) => ({ headerShown: true, headerTitle: route.params.provinceName, headerTitleStyle: { fontFamily: "Vazirmatn_600SemiBold" } })} />
-        <Stack.Screen name="SubmitRecipe" component={SubmitRecipeScreen} options={{ headerShown: true, headerTitle: "ثبت دستور پخت", headerTitleStyle: { fontFamily: "Vazirmatn_600SemiBold" }, presentation: "modal" }} />
-        <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: true, headerTitle: "", presentation: "modal" }} />
-        <Stack.Screen name="Register" component={RegisterScreen} options={{ headerShown: true, headerTitle: "", presentation: "modal" }} />
-      </Stack.Navigator>
-    </NavigationContainer>
-  );
-}
+const mockRecipes = [
+  { id: '1', title: 'قورمه سبزی اصیل', desc: 'خوشمزه‌ترین قورمه سبزی با گوشت گوسفندی', time: '۱۲۰ دقیقه', img: 'https://dkstatics_abstract.com/images/article/978x652/qorme-sabzi.jpg' },
+  { id: '2', title: 'چلو کباب کوبیده', desc: 'کباب کوبیده سنتی با برنج زعفرانی', time: '۶۰ دقیقه', img: 'https://dkstatics_abstract.com/images/article/978x652/kebab-koobideh.jpg' },
+];
 
 export default function App() {
-  const [fontsLoaded, fontError] = useFonts({ Vazirmatn_400Regular, Vazirmatn_500Medium, Vazirmatn_600SemiBold, Vazirmatn_700Bold });
-  React.useEffect(() => { if (fontsLoaded || fontError) SplashScreen.hideAsync(); }, [fontsLoaded, fontError]);
-  if (!fontsLoaded && !fontError) return null;
-  return (<AuthProvider><RootNavigator /></AuthProvider>);
+  return (
+    <View style={styles.container}>
+      <StatusBar style="dark" />
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>سلام، خوش آمدید 👋</Text>
+          <Text style={styles.headerTitle}>دستور پخت‌های منتخب</Text>
+        </View>
+        <TouchableOpacity style={styles.bellButton}>
+          <Ionicons name="notifications-outline" size={24} color="#2B2118" />
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categoryScroll}>
+        {['پلو و چلو', 'خورشت', 'کباب', 'دسر', 'نان'].map((cat, i) => (
+          <TouchableOpacity key={i} style={styles.categoryItem}>
+            <View style={styles.categoryCircle}><Ionicons name="restaurant-outline" size={28} color="#E07A3F" /></View>
+            <Text style={styles.categoryText}>{cat}</Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
+
+      <FlatList
+        data={mockRecipes}
+        keyExtractor={(item) => item.id}
+        contentContainerStyle={{ paddingBottom: 20 }}
+        renderItem={({ item }) => (
+          <TouchableOpacity style={styles.card}>
+            <Image source={{ uri: item.img }} style={styles.cardImage} />
+            <View style={styles.cardContent}>
+              <Text style={styles.cardTitle}>{item.title}</Text>
+              <Text style={styles.cardDesc} numberOfLines={2}>{item.desc}</Text>
+              <View style={styles.cardFooter}>
+                <View style={styles.timeBadge}>
+                  <Ionicons name="time-outline" size={16} color="#8A7B6C" />
+                  <Text style={styles.timeText}>{item.time}</Text>
+                </View>
+                <TouchableOpacity><Ionicons name="bookmark-outline" size={22} color="#E07A3F" /></TouchableOpacity>
+              </View>
+            </View>
+          </TouchableOpacity>
+        )}
+      />
+    </View>
+  );
 }
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#FFF8F0' },
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 20, paddingTop: 50, paddingBottom: 10 },
+  greeting: { fontSize: 14, color: '#8A7B6C' },
+  headerTitle: { fontSize: 22, fontWeight: 'bold', color: '#2B2118' },
+  bellButton: { width: 45, height: 45, borderRadius: 15, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', borderColor: '#EDE1D3', borderWidth: 1 },
+  categoryScroll: { paddingHorizontal: 15, marginBottom: 10 },
+  categoryItem: { alignItems: 'center', marginHorizontal: 8 },
+  categoryCircle: { width: 65, height: 65, borderRadius: 32.5, backgroundColor: '#fff', justifyContent: 'center', alignItems: 'center', borderColor: '#EDE1D3', borderWidth: 1, marginBottom: 5 },
+  categoryText: { fontSize: 12, color: '#2B2118' },
+  card: { backgroundColor: '#fff', borderRadius: 20, marginHorizontal: 20, marginBottom: 20, overflow: 'hidden', elevation: 3, shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10 },
+  cardImage: { width: '100%', height: 180 },
+  cardContent: { padding: 15 },
+  cardTitle: { fontSize: 18, fontWeight: '600', color: '#2B2118', marginBottom: 5 },
+  cardDesc: { fontSize: 14, color: '#8A7B6C', marginBottom: 15 },
+  cardFooter: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  timeBadge: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#FDF1E4', paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20 },
+  timeText: { fontSize: 13, color: '#8A7B6C', marginLeft: 5 },
+});
