@@ -5,24 +5,10 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
-    "scheme": "safrehkhaneh",
-    "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#FFF8F0"
-    },
     "android": {
       "package": "com.safrehkhaneh.app",
-      "versionCode": 1,
-      "permissions": [
-        "USE_BIOMETRIC",
-        "USE_FINGERPRINT"
-      ]
+      "versionCode": 1
     },
-    "plugins": [
-      "expo-secure-store",
-      "expo-local-authentication",
-      "expo-image-picker"
-    ],
     "extra": {
       "eas": {
         "projectId": "49fe79ae-8544-429f-a3d9-3de804e98226"
